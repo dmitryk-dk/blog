@@ -55,6 +55,7 @@ Temporary Items
 .idea/dictionaries
 node_modules
 dist/
+server
 
 # Sensitive or high-churn files:
 .idea/**/dataSources/

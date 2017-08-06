@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-export default class Form extends Component {
+export default class Post extends Component {
 
     constructor (props) {
         super (props);
@@ -12,7 +12,6 @@ export default class Form extends Component {
     }
 
     componentWillMount () {
-        console.log(this.props);
         this.setState(state => ({
             ...state,
             id:          this.props.id,

@@ -12,7 +12,8 @@ class Store extends ReduceStore {
         return {
             id:          null,
             title:       '',
-            description: ''
+            description: '',
+            isSaving:    false
         };
     }
 
@@ -31,14 +32,15 @@ class Store extends ReduceStore {
             case actionTypes.ACTION_SAVE_POST_REQUEST:
                 return {
                     ...state,
+                    isSaving: true
                 };
             case actionTypes.ACTION_SAVE_POST_SUCCESS:
-                console.log(action)
                 return {
                     ...state,
                     id: state.id + 1,
                     title: action.state.title,
                     description: action.state.description,
+                    isSaving: false
                 };
             default:
                 return state;
