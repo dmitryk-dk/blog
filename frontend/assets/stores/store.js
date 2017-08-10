@@ -13,7 +13,8 @@ class Store extends ReduceStore {
             id:          null,
             title:       '',
             description: '',
-            isSaving:    false
+            isSaving:    false,
+            posts:       []
         };
     }
 
@@ -35,12 +36,28 @@ class Store extends ReduceStore {
                     isSaving: true
                 };
             case actionTypes.ACTION_SAVE_POST_SUCCESS:
+                const savedPosts = {
+                    ...state,
+                    ...state.posts.push(action.post)
+                };
                 return {
                     ...state,
                     id: state.id + 1,
-                    title: action.state.title,
-                    description: action.state.description,
-                    isSaving: false
+                    title: action.post.title,
+                    description: action.post.description,
+                    isSaving: false,
+                    ...savedPosts.posts
+                };
+            case actionTypes.ACTION_POST_DELETE:
+                const updateByPosts = {
+                    posts: [
+                        ...state.posts.filter(post => post.id !== action.id)
+                    ]
+                };
+                console.log(updateByPosts);
+                return {
+                    ...state,
+                    ...updateByPosts
                 };
             default:
                 return state;

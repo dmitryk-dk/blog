@@ -15,7 +15,9 @@ class App extends Component {
     }
 
     static calculateState(prevState, props) {
-        return appStore.getState();
+        return {
+            ...appStore.getState()
+        }
     }
 
     render () {

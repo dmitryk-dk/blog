@@ -32,13 +32,13 @@ func indexHandler (w http.ResponseWriter, r *http.Request) {
 	jsonPost, err := json.Marshal(post)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err))
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 	data := &PostJson{string(jsonPost) }
 	t, err := template.ParseFiles("./index.html")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err))
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 	t.ExecuteTemplate(w, "index", *data)
 }
@@ -53,7 +53,7 @@ func postHandler (w http.ResponseWriter, r *http.Request) {
 	body,err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err))
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 	json.Unmarshal(body, &post)
 
@@ -65,7 +65,7 @@ func postHandler (w http.ResponseWriter, r *http.Request) {
 	jsonResponse, err := json.Marshal(ok)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err))
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 	w.Write(jsonResponse)
 }

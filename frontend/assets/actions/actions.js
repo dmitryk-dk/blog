@@ -10,13 +10,13 @@ export function initContainer (data) {
 }
 
 
-export function submit (state) {
+export function submit (post) {
     const url = `http://localhost:3030/post`;
     appDispatcher.dispatch({
         actionType: actionTypes.ACTION_SAVE_POST_REQUEST
     });
     http
-        .post(url, state)
+        .post(url, post)
         .then(response => {
         response
             .json()
@@ -24,7 +24,7 @@ export function submit (state) {
                 if (data.success) {
                     appDispatcher.dispatch({
                         actionType: actionTypes.ACTION_SAVE_POST_SUCCESS,
-                        state
+                        post
                     });
                 }
             })
@@ -32,4 +32,11 @@ export function submit (state) {
                 console.log(data);
             })
         })
+}
+
+export function deletePost (id) {
+    appDispatcher.dispatch({
+        actionType: actionTypes.ACTION_POST_DELETE,
+        id
+    });
 }
