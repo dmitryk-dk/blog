@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"encoding/json"
 	"io/ioutil"
-	"github.com/blog/models"
+	"github.com/dmitryk-dk/blog/models"
 )
 
 
@@ -29,11 +29,16 @@ func indexHandler (w http.ResponseWriter, r *http.Request) {
 		Title:   	 "New title",
 		Description: "Description",
 	}
-	jsonPost, _ := json.Marshal(post)
+	jsonPost, err := json.Marshal(post)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err))
+	}
 	data := &PostJson{string(jsonPost) }
 	t, err := template.ParseFiles("./index.html")
 	if err != nil {
-		fmt.Fprintf(w, err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err))
 	}
 	t.ExecuteTemplate(w, "index", *data)
 }
@@ -47,7 +52,8 @@ func postHandler (w http.ResponseWriter, r *http.Request) {
 
 	body,err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		fmt.Fprintf(w, err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err))
 	}
 	json.Unmarshal(body, &post)
 
@@ -56,12 +62,16 @@ func postHandler (w http.ResponseWriter, r *http.Request) {
 
 	ok := &ResponseOk{ Ok: true }
 
-	jsonResponse, _ := json.Marshal(ok)
+	jsonResponse, err := json.Marshal(ok)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err))
+	}
 	w.Write(jsonResponse)
 }
 
 func main () {
-	port := "3030"
+	const port = "3030"
 	depHandler := dependenciesHandler()
 	http.Handle("/dist/", depHandler)
 	http.HandleFunc("/", indexHandler)
