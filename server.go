@@ -23,6 +23,8 @@ type ResponseErr struct {
 	Error	string	`json:"error"`
 }
 
+var posts map[int]*models.Post
+
 func indexHandler (w http.ResponseWriter, r *http.Request) {
 	post := &models.Post{
 		Id: 		 0,
@@ -57,11 +59,31 @@ func postHandler (w http.ResponseWriter, r *http.Request) {
 	}
 	json.Unmarshal(body, &post)
 
-	posts := make(map[int]*models.Post, 0)
 	posts[post.Id] = &post
-
 	ok := &ResponseOk{ Ok: true }
+	jsonResponse, err := json.Marshal(ok)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	w.Write(jsonResponse)
+}
 
+func deleteHandler (w http.ResponseWriter, r *http.Request) {
+	var id int
+
+	body,err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	json.Unmarshal(body, &id)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	delete(posts, id)
+	ok := &ResponseOk{ Ok: true }
 	jsonResponse, err := json.Marshal(ok)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -72,11 +94,12 @@ func postHandler (w http.ResponseWriter, r *http.Request) {
 
 func main () {
 	const port = "3030"
+	posts = make(map[int]*models.Post, 0)
 	depHandler := dependenciesHandler()
 	http.Handle("/dist/", depHandler)
 	http.HandleFunc("/", indexHandler)
 	http.HandleFunc("/post", postHandler)
-
+	http.HandleFunc("/delete", deleteHandler)
 	fmt.Printf("Running server on port: %s\n Type Ctr-c to shutdown server.\n", port)
 
 	http.ListenAndServe(":"+port, nil)

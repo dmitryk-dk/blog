@@ -35,8 +35,26 @@ export function submit (post) {
 }
 
 export function deletePost (id) {
+    const url = `http://localhost:3030/delete`;
     appDispatcher.dispatch({
-        actionType: actionTypes.ACTION_POST_DELETE,
+        actionType: actionTypes.ACTION_POST_DELETE_REQUEST,
         id
     });
+    http
+        .del(url, id)
+        .then(response => {
+            response
+                .json()
+                .then(data => {
+                    if (data.success) {
+                        appDispatcher.dispatch({
+                            actionType: actionTypes.ACTION_POST_DELETE_SUCCESS,
+                            id
+                        });
+                    }
+                })
+                .catch(data => {
+                    console.log(data);
+                })
+        })
 }

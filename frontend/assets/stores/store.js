@@ -10,9 +10,9 @@ class Store extends ReduceStore {
 
     getInitialState () {
         return {
-            id:          null,
-            title:       '',
-            description: '',
+            //id:          null,
+            //title:       '',
+            //description: '',
             isSaving:    false,
             posts:       []
         };
@@ -43,20 +43,20 @@ class Store extends ReduceStore {
                 return {
                     ...state,
                     id: state.id + 1,
-                    title: action.post.title,
-                    description: action.post.description,
+                    //title: action.post.title,
+                    //description: action.post.description,
                     isSaving: false,
                     ...savedPosts.posts
                 };
-            case actionTypes.ACTION_POST_DELETE:
+            case actionTypes.ACTION_POST_DELETE_SUCCESS:
                 const updateByPosts = {
                     posts: [
                         ...state.posts.filter(post => post.id !== action.id)
                     ]
                 };
-                console.log(updateByPosts);
                 return {
                     ...state,
+                    id: state.id - 1,
                     ...updateByPosts
                 };
             default:
