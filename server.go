@@ -114,7 +114,7 @@ func dbConfigReader () (*config.Config, error){
 	flag.Parse()
 	cfg, err := config.Read(*configFile)
 	if err != nil {
-		log.Fatalf("Error reading config %s: %s", *configFile, err)
+		return nil, err
 	}
 	return cfg, nil
 }
