@@ -9,6 +9,9 @@ import (
 	"github.com/dmitryk-dk/blog/models"
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
+	"flag"
+	"github.com/dmitryk-dk/blog/config"
+	"log"
 )
 
 
@@ -26,6 +29,7 @@ type ResponseErr struct {
 }
 
 var posts map[int]*models.Post
+var configFile = flag.String("dbconfig", "dbconfig.json", "Path to config file")
 
 func indexHandler (w http.ResponseWriter, r *http.Request) {
 	post := &models.Post{
@@ -106,10 +110,24 @@ func deleteHandler (w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonResponse)
 }
 
+func dbConfigReader () (*config.Config, error){
+	flag.Parse()
+	cfg, err := config.Read(*configFile)
+	if err != nil {
+		log.Fatalf("Error reading config %s: %s", *configFile, err)
+	}
+	return cfg, nil
+}
+
 func main () {
 	const port = "3030"
+	flag.Parse()
+	cfg, err := dbConfigReader()
+	if err != nil {
+		log.Fatalf("Error reading config %s: %s", *configFile, err)
+	}
 	posts = make(map[int]*models.Post, 0)
-	db, err := sql.Open("mysql", "dmitryk:password@tcp(192.168.56.107:3306)/posts")
+	db, err := sql.Open(cfg.DbDriverName, cfg.User+":"+cfg.Password+"@"+cfg.Host+"/"+cfg.DbName)
 	depHandler := dependenciesHandler()
 	http.Handle("/dist/", depHandler)
 	http.HandleFunc("/", indexHandler)
@@ -120,7 +138,6 @@ func main () {
 	}
 	res, err := db.Query("SELECT * FROM `post`")
 	if err != nil {
-		fmt.Println(err)
 		panic(err)
 	}
 	fmt.Printf("%v\n", res)
