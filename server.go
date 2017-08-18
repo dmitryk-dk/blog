@@ -109,7 +109,7 @@ func deleteHandler (w http.ResponseWriter, r *http.Request) {
 func main () {
 	const port = "3030"
 	posts = make(map[int]*models.Post, 0)
-	db, err := sql.Open("mysql", "dmitryk:DbImOK85!@tcp(192.168.56.107:3306)/posts")
+	db, err := sql.Open("mysql", "dmitryk:password@tcp(192.168.56.107:3306)/posts")
 	depHandler := dependenciesHandler()
 	http.Handle("/dist/", depHandler)
 	http.HandleFunc("/", indexHandler)
