@@ -6,12 +6,10 @@ import (
 	"fmt"
 	"encoding/json"
 	"io/ioutil"
-	"github.com/dmitryk-dk/blog/models"
-	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
-	"flag"
+	"github.com/dmitryk-dk/blog/models"
 	"github.com/dmitryk-dk/blog/config"
-	"log"
+	"github.com/dmitryk-dk/blog/database"
 )
 
 
@@ -29,7 +27,6 @@ type ResponseErr struct {
 }
 
 var posts map[int]*models.Post
-var configFile = flag.String("dbconfig", "dbconfig.json", "Path to config file")
 
 func indexHandler (w http.ResponseWriter, r *http.Request) {
 	post := &models.Post{
@@ -110,32 +107,19 @@ func deleteHandler (w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonResponse)
 }
 
-func dbConfigReader () (*config.Config, error){
-	flag.Parse()
-	cfg, err := config.Read(*configFile)
-	if err != nil {
-		return nil, err
-	}
-	return cfg, nil
-}
-
 func main () {
 	const port = "3030"
-	flag.Parse()
-	cfg, err := dbConfigReader()
-	if err != nil {
-		log.Fatalf("Error reading config %s: %s", *configFile, err)
-	}
 	posts = make(map[int]*models.Post, 0)
-	db, err := sql.Open(cfg.DbDriverName, cfg.User+":"+cfg.Password+"@"+cfg.Host+"/"+cfg.DbName)
+	cfg := config.GetConfig()
+	db, err := database.Connect(cfg)
+	if err != nil {
+		panic(err)
+	}
 	depHandler := dependenciesHandler()
 	http.Handle("/dist/", depHandler)
 	http.HandleFunc("/", indexHandler)
 	http.HandleFunc("/post", postHandler)
 	http.HandleFunc("/delete", deleteHandler)
-	if err != nil {
-		panic(err)
-	}
 	res, err := db.Query("SELECT * FROM `post`")
 	if err != nil {
 		panic(err)
@@ -143,6 +127,5 @@ func main () {
 	fmt.Printf("%v\n", res)
 	db.Close()
 	fmt.Printf("Running server on port: %s\n Type Ctr-c to shutdown server.\n", port)
-
 	http.ListenAndServe(":"+port, nil)
 }
