@@ -2,10 +2,10 @@ package database
 
 import (
 	"database/sql"
-	"github.com/dmitryk-dk/blog/config"
 	"fmt"
-	"github.com/dmitryk-dk/blog/models"
 	"log"
+	"github.com/dmitryk-dk/blog/models"
+	"github.com/dmitryk-dk/blog/config"
 )
 
 var dbInstance *sql.DB
@@ -24,8 +24,9 @@ func Connect (config *config.Config) (*sql.DB, error) {
 
 type DbMethodsHelper interface {
 	AddPost(*models.Post) error
-	//DeletePost(*models.Post) error
+	DeletePost(id int) error
 	GetPost(*models.Post) error
+	GetAllPosts() (models.Posts, error)
 	//UpdatePost(*models.Post) error
 }
 
@@ -46,11 +47,22 @@ func (m *DbMethods) AddPost (post *models.Post) error {
 	return nil
 }
 
-//func (m *DbMethods) DeletePost (post *models.Post) error {
-//	return nil
-//}
-//
-func (m *DbMethods) GetPost (post *models.Post)  (error) {
+func (m *DbMethods) DeletePost(id int)  error {
+	stmt, err := dbInstance.Prepare("DELETE from post where id=?")
+	if err != nil {
+		fmt.Errorf("Can't delete from database: %s", err)
+		return nil
+	}
+	res, err := stmt.Exec(&id)
+	if err != nil {
+		fmt.Errorf("Can't add to database: %s", err)
+		return nil
+	}
+	fmt.Printf("%v\n", res)
+	return nil
+}
+
+func (m *DbMethods) GetPost (post *models.Post)  error {
 	rows, err := dbInstance.Query("SELECT * FROM post")
 	if err != nil {
 		fmt.Errorf("Can't add to database: %s", err)
@@ -64,6 +76,22 @@ func (m *DbMethods) GetPost (post *models.Post)  (error) {
 		}
 	}
 	return nil
+}
+
+func (m *DbMethods) GetAllPosts() (models.Posts, error) {
+	posts := make(models.Posts, 0)
+	rows, err := dbInstance.Query("SELECT * FROM post")
+	if err != nil {
+		fmt.Errorf("Can't add to database: %s", err)
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		post := &models.Post{}
+		rows.Scan(&post.Id, &post.Title, &post.Description)
+		posts = append(posts, *post)
+	}
+	return posts, nil
 }
 //
 //func (m *DbMethods) UpdatePost (post *models.Post) error {

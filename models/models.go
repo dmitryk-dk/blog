@@ -2,11 +2,9 @@ package models
 
 
 type Post struct {
-	Id			int	   `json:"id"`
-	Title   	string `json:"title"`
-	Description string `json:"description"`
+	Id			int	   `json:"id" db:"id"`
+	Title   	string `json:"title" db:"title"`
+	Description string `json:"description" db:"description"`
 }
 
-func NewPost (id int, title, description string) *Post{
-	return &Post{id, title, description}
-}
+type Posts []Post

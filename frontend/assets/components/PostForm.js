@@ -4,23 +4,25 @@ export default class PostForm extends Component {
 
     constructor (props) {
         super (props);
+        console.log(props);
         this.state = {
-            id:      null,
-            title:   '',
-            description: ''
+            id:          props.id,
+            title:       props.title,
+            description: props.description
         }
     }
 
-    componentWillMount () {
-        this.setState(state => ({
-            ...state,
-            id:          this.props.id,
-            title:       this.props.title,
-            description: this.props.description
-        }));
-    }
+    // componentWillMount () {
+    //     this.setState(state => ({
+    //         ...state,
+    //         id:          this.props.id,
+    //         title:       this.props.title,
+    //         description: this.props.description
+    //     }));
+    // }
 
     render () {
+        console.log(this.state);
         const { id, title, description } = this.state;
         return <form className="text-center" onSubmit={ (event) => this._handleSubmit(event) }>
             <div className="row">

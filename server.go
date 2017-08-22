@@ -6,15 +6,15 @@ import (
 	"fmt"
 	"encoding/json"
 	"io/ioutil"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/dmitryk-dk/blog/models"
-	"github.com/dmitryk-dk/blog/config"
-	"github.com/dmitryk-dk/blog/database"
 	"log"
 	"os/signal"
 	"os"
 	"syscall"
 	"database/sql"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/dmitryk-dk/blog/models"
+	"github.com/dmitryk-dk/blog/config"
+	"github.com/dmitryk-dk/blog/database"
 )
 
 
@@ -35,10 +35,9 @@ var posts map[int]*models.Post
 
 func indexHandler (w http.ResponseWriter, r *http.Request) {
 	var dbHelper database.DbMethodsHelper
-	post := &models.Post{}
 	dbHelper = &database.DbMethods{}
-	dbHelper.GetPost(post)
-	jsonPost, err := json.Marshal(post)
+	posts, err := dbHelper.GetAllPosts()
+	jsonPost, err := json.Marshal(posts)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -100,25 +99,47 @@ func postHandler (w http.ResponseWriter, r *http.Request) {
 
 func deleteHandler (w http.ResponseWriter, r *http.Request) {
 	var id int
+	var dbHelper database.DbMethodsHelper
+	if r.Method == "DELETE" {
+		dbHelper = &database.DbMethods{}
+		body, err := ioutil.ReadAll(r.Body)
 
-	body,err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+		json.Unmarshal(body, &id)
+
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+		err = dbHelper.DeletePost(id)
+
+		if err != nil {
+			errorResp := &ResponseErr{"You don't create post"}
+			jsonErrResponse, err := json.Marshal(errorResp)
+			w.WriteHeader(http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			w.Write(jsonErrResponse)
+		}
+
+		ok := &ResponseOk{Ok: true }
+		jsonResponse, err := json.Marshal(ok)
+
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		w.Write(jsonResponse)
+	} else {
+		errorMethod := &ResponseErr{"You use error method"}
+		jsonErrResponse, _ := json.Marshal(errorMethod)
+		w.Write(jsonErrResponse)
+		http.Error(w, "Used another Method", http.StatusInternalServerError)
 	}
-	json.Unmarshal(body, &id)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-	delete(posts, id)
-	ok := &ResponseOk{ Ok: true }
-	jsonResponse, err := json.Marshal(ok)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-	w.Write(jsonResponse)
 }
 
 func main () {
