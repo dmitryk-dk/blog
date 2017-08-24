@@ -12,15 +12,6 @@ export default class PostForm extends Component {
         }
     }
 
-    // componentWillMount () {
-    //     this.setState(state => ({
-    //         ...state,
-    //         id:          this.props.id,
-    //         title:       this.props.title,
-    //         description: this.props.description
-    //     }));
-    // }
-
     render () {
         console.log(this.state);
         const { id, title, description } = this.state;
